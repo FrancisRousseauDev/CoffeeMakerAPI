@@ -11,11 +11,16 @@ def hello_world():
 
 @app.route("/consumptions")
 def consumptions():
-    records = readDatabase()
+    records = readDatabase('consumption')
+    return jsonify(records)
+
+@app.route("/coffees")
+def coffees():
+    records = readDatabase('coffee')
     return jsonify(records)
 
 
-def readDatabase():
+def readDatabase(type):
     try:
         connection = psycopg2.connect(user=os.getenv('credential.user'),
                                       password=os.getenv('credential.password'),
@@ -23,9 +28,13 @@ def readDatabase():
                                       port=os.getenv('credential.port'),
                                       database=os.getenv('credential.database'))
         cursor = connection.cursor()
-        postgreSQL_select_Query = "select * from consumption"
+        query = ''
+        if type == 'consumption':
+            query = "select * from consumption"
+        elif type == 'coffee':
+            query = "select * from coffee"
 
-        cursor.execute(postgreSQL_select_Query)
+        cursor.execute(query)
         mobile_records = cursor.fetchall()
         return mobile_records
 
