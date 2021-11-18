@@ -34,8 +34,8 @@ def convertConsumptionToJSON(consumptions):
         parsedList.append({
             'id': i[0],
             'date': i[1],
-            'value': i[2],
-            'score': i[3]
+            'name': i[2],
+            'value': i[3]
         })
     return parsedList
 
