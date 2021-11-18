@@ -6,12 +6,6 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-os.environ['credential.user'] = 'ytnmrkvrezuqgp'
-os.environ['credential.password'] = '9096a9207a80a9ced6a46c5a1f9c347781359cba08940c4761eb722d4a0b28d6'
-os.environ['credential.host'] = 'ec2-54-228-162-209.eu-west-1.compute.amazonaws.com'
-os.environ['credential.port'] = '5432'
-os.environ['credential.database'] = 'deebqrjrgb2m5'
-
 @app.route("/")
 def hello_world():
     return "<p>Application coffeeAPI loaded succesfully</p>"
@@ -28,6 +22,19 @@ def coffees():
     records = readDatabase('coffee')
     return jsonify(records)
 
+@app.route("/numberByType")
+def getNumberByType():
+    records = readDatabase('number-comparison')
+    coffees = readDatabase('coffee')
+    parsedRecords = convertNumberByTypeToJSON(records, coffees)
+    return jsonify(parsedRecords)
+
+def getCoffeeNameByID(id, coffees):
+    for i in coffees:
+        if i[1] == id:
+            return i[0]
+
+
 def convertConsumptionToJSON(consumptions):
     parsedList = []
     for i in consumptions:
@@ -36,6 +43,16 @@ def convertConsumptionToJSON(consumptions):
             'date': i[1],
             'name': i[2],
             'value': i[3]
+        })
+    return parsedList
+
+def convertNumberByTypeToJSON(numbers, coffees):
+    parsedList = []
+    for i in numbers:
+        name = getCoffeeNameByID(i[0], coffees)
+        parsedList.append({
+            'name': name,
+            'value': i[1]
         })
     return parsedList
 
@@ -53,6 +70,8 @@ def readDatabase(type):
             query = "select * from consumption"
         elif type == 'coffee':
             query = "select * from coffee"
+        elif type == 'number-comparison':
+            query = "select \"coffeeID\", COUNT(*) from consumption GROUP BY \"coffeeID\""
 
         cursor.execute(query)
         mobile_records = cursor.fetchall()
