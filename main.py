@@ -6,6 +6,12 @@ import os
 app = Flask(__name__)
 CORS(app)
 
+os.environ['credential.user'] = 'ytnmrkvrezuqgp'
+os.environ['credential.password'] = '9096a9207a80a9ced6a46c5a1f9c347781359cba08940c4761eb722d4a0b28d6'
+os.environ['credential.host'] = 'ec2-54-228-162-209.eu-west-1.compute.amazonaws.com'
+os.environ['credential.port'] = '5432'
+os.environ['credential.database'] = 'deebqrjrgb2m5'
+
 @app.route("/")
 def hello_world():
     return "<p>Application coffeeAPI loaded succesfully</p>"
@@ -14,12 +20,24 @@ def hello_world():
 @app.route("/consumptions")
 def consumptions():
     records = readDatabase('consumption')
-    return jsonify(records)
+    parsedRecords = convertConsumptionToJSON(records)
+    return jsonify(parsedRecords)
 
 @app.route("/coffees")
 def coffees():
     records = readDatabase('coffee')
     return jsonify(records)
+
+def convertConsumptionToJSON(consumptions):
+    parsedList = []
+    for i in consumptions:
+        parsedList.append({
+            'id': i[0],
+            'date': i[1],
+            'coffeeType': i[2],
+            'score': i[3]
+        })
+    return parsedList
 
 
 def readDatabase(type):
