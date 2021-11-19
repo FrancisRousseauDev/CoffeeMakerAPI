@@ -25,8 +25,7 @@ def coffees():
 @app.route("/numberByType")
 def getNumberByType():
     records = readDatabase('number-comparison')
-    coffees = readDatabase('coffee')
-    parsedRecords = convertNumberByTypeToJSON(records, coffees)
+    parsedRecords = convertNumberByTypeToJSON(records)
     return jsonify(parsedRecords)
 
 def getCoffeeNameByID(id, coffees):
@@ -46,13 +45,13 @@ def convertConsumptionToJSON(consumptions):
         })
     return parsedList
 
-def convertNumberByTypeToJSON(numbers, coffees):
+def convertNumberByTypeToJSON(numbers):
     parsedList = []
     for i in numbers:
-        name = getCoffeeNameByID(i[0], coffees)
         parsedList.append({
-            'name': name,
-            'value': i[1]
+            'id': i[0],
+            'name': i[1],
+            'value': i[2]
         })
     return parsedList
 
@@ -71,7 +70,9 @@ def readDatabase(type):
         elif type == 'coffee':
             query = "select * from coffee"
         elif type == 'number-comparison':
-            query = "select \"coffeeID\", COUNT(*) from consumption GROUP BY \"coffeeID\""
+            query = "select con.\"coffeeID\", cof.\"name\", count(*) from public.consumption con inner" \
+                    " join public.coffee cof on (con.\"coffeeID\" = cof.\"coffeeID\")" \
+                    " GROUP BY cof.\"name\", con.\"coffeeID\""
 
         cursor.execute(query)
         mobile_records = cursor.fetchall()
